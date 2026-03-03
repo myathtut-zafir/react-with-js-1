@@ -26,19 +26,46 @@ export const insertDummyMetric = async () => {
 };
 
 // Update search count — call this when a user searches for a movie
+// If the searchTerm already exists, increment count by 1. Otherwise insert a new row.
 export const updateSearchCount = async (searchTerm, movie) => {
     if (!searchTerm || !movie) return;
 
-    const { data, error } = await supabase.from("mertics").insert([
-        {
-            searchTerm: searchTerm,
-            count: 1,
-            poster_url: movie.poster_path
-                ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                : null,
-            movie_id: movie.id,
-        },
-    ]);
+    // Check if a row with this searchTerm already exists (take first if multiple)
+    const { data: rows, error: fetchError } = await supabase
+        .from("mertics")
+        .select("id, count")
+        .eq("searchTerm", searchTerm)
+        .order("created_at", { ascending: true })
+        .limit(1);
+
+    if (fetchError) {
+        console.error("Supabase fetch error:", fetchError);
+        return { data: null, error: fetchError };
+    }
+
+    const existing = rows && rows.length > 0 ? rows[0] : null;
+
+    let data, error;
+
+    if (existing) {
+        // Row exists — increment count
+        ({ data, error } = await supabase
+            .from("mertics")
+            .update({ count: existing.count + 1 })
+            .eq("id", existing.id));
+    } else {
+        // No existing row — insert new one
+        ({ data, error } = await supabase.from("mertics").insert([
+            {
+                searchTerm: searchTerm,
+                count: 1,
+                poster_url: movie.poster_path
+                    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                    : null,
+                movie_id: movie.id,
+            },
+        ]));
+    }
 
     if (error) {
         console.error("Supabase updateSearchCount error:", error);

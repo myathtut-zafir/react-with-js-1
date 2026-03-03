@@ -57,12 +57,7 @@ const App = () => {
   useEffect(() => {
     fetchMovies(debounceSearchTerm);
   }, [debounceSearchTerm]);
-
-  // Insert a dummy row on first render to verify Supabase connection
-  useEffect(() => {
-    insertDummyMetric();
-  }, []);
-
+  
   return (
     <div className="pattern">
       <div className="wrapper">
