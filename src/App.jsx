@@ -4,7 +4,8 @@ import Search from "./components/Search";
 import Spinner from "./components/Spinner";
 import MovieCard from "./components/MovieCard";
 import { useDebounce } from "react-use";
-import { updateSearchCount, insertDummyMetric } from "./supabase";
+import { updateSearchCount, getTrendingMovies } from "./supabase";
+import TrendingMovies from "./components/TrendingMovies";
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -21,6 +22,7 @@ const App = () => {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [debounceSearchTerm, setDebounceSearchTerm] = useState("");
+  const [topMovies, setTopMovies] = useState();
 
   useDebounce(() => setDebounceSearchTerm(searchTerm), 500, [searchTerm]);
 
@@ -57,7 +59,15 @@ const App = () => {
   useEffect(() => {
     fetchMovies(debounceSearchTerm);
   }, [debounceSearchTerm]);
-  
+
+  useEffect(() => {
+    const loadTrendingMovies = async () => {
+      const { data } = await getTrendingMovies();
+      if (data) setTopMovies(data);
+    };
+    loadTrendingMovies();
+  }, []);
+
   return (
     <div className="pattern">
       <div className="wrapper">
@@ -69,6 +79,7 @@ const App = () => {
           </h1>
           <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         </header>
+        <TrendingMovies trendingMovies={topMovies} />
         <section className="all-movies">
           <h2 className="mt-[40]">All movies</h2>
           {isLoading ? (

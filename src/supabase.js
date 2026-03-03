@@ -25,6 +25,23 @@ export const insertDummyMetric = async () => {
     return { data, error };
 };
 
+// Get top 5 trending movies ordered by count (highest first)
+export const getTrendingMovies = async () => {
+    const { data, error } = await supabase
+        .from("mertics")
+        .select("*")
+        .order("count", { ascending: false })
+        .limit(5);
+
+    if (error) {
+        console.error("Supabase getTrendingMovies error:", error);
+    } else {
+        console.log("Trending movies:", data);
+    }
+
+    return { data, error };
+};
+
 // Update search count — call this when a user searches for a movie
 // If the searchTerm already exists, increment count by 1. Otherwise insert a new row.
 export const updateSearchCount = async (searchTerm, movie) => {
