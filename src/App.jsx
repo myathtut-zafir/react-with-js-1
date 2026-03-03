@@ -22,7 +22,7 @@ const App = () => {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [debounceSearchTerm, setDebounceSearchTerm] = useState("");
-  const [topMovies, setTopMovies] = useState();
+  const [topMovies, setTopMovies] = useState([]);
 
   useDebounce(() => setDebounceSearchTerm(searchTerm), 500, [searchTerm]);
 
